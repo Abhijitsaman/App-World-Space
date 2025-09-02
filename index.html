@@ -1,0 +1,870 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App World Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a2e; /* Dark space background */
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #0f0f1c; /* Even deeper space dark */
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif; /* Futuristic font */
+            font-size: 2.8em;
+            color: #00bcd4; /* Bright cyan for app name */
+            text-shadow: 0 0 10px #00bcd4, 0 0 20px #00bcd4;
+            letter-spacing: 2px;
+        }
+
+        /* Sub-Header / Control Bar */
+        .sub-header {
+            position: fixed;
+            top: 90px; /* Below the main header */
+            left: 0;
+            width: 100%;
+            background-color: #1a1a2e;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+        }
+
+        .date-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Updated: Changed from date input to text input */
+        .sub-header input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #00bcd4;
+            border-radius: 5px;
+            background-color: #2b2b40;
+            color: #e0e0e0;
+            font-size: 1em;
+            outline: none;
+            width: 150px;
+            cursor: text;
+        }
+
+        /* Updated: Modern SVG search icon */
+        .search-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .search-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Search Bar (Initially hidden) */
+        .search-bar {
+            position: fixed;
+            top: 145px; /* Below sub-header */
+            left: 0;
+            width: 100%;
+            background-color: #1a1a2e;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Updated: Fixed text visibility in search bar */
+        .search-bar input[type="text"] {
+            flex-grow: 1;
+            max-width: 500px;
+            padding: 12px 15px; /* Increased padding for better text visibility */
+            border: 1px solid #00bcd4;
+            border-radius: 5px;
+            background-color: #2b2b40;
+            color: #e0e0e0;
+            font-size: 1.1em;
+            outline: none;
+            line-height: 1.5; /* Ensures text is vertically centered */
+        }
+
+        .search-bar button {
+            background-color: #00bcd4;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-bar button:hover {
+            background-color: #5edbf3;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 150px; /* Space for fixed headers */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .apod-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+            padding-bottom: 50px; /* Space for loading indicator */
+        }
+
+        .apod-card {
+            background-color: #2b2b40;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .apod-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+        }
+
+        .apod-card img {
+            width: 100%;
+            height: 250px; /* Fixed height for image previews */
+            object-fit: cover;
+            display: block;
+        }
+
+        .apod-card-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .apod-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #00bcd4;
+            font-size: 1.3em;
+            min-height: 2.6em; /* Ensure title has consistent height */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .apod-card p {
+            font-size: 0.9em;
+            color: #a0a0a0;
+            margin-bottom: 0;
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #00bcd4;
+            display: none; /* Hidden by default */
+        }
+
+        /* Full-screen Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            overflow-y: auto; /* Allow scrolling for long explanations */
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #2b2b40;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto; /* Scroll within the modal content */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block; /* Remove extra space below image */
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2em;
+            color: #00bcd4;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .modal-date {
+            font-size: 1em;
+            color: #a0a0a0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-explanation {
+            font-size: 1.1em;
+            color: #e0e0e0;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2em;
+            color: #00bcd4;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.3s ease;
+            line-height: 1; /* Prevent extra space below 'X' */
+        }
+
+        .close-button:hover {
+            color: #5edbf3;
+        }
+
+        /* NASA Image Search Results Modal */
+        .nasa-search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            overflow-y: auto;
+        }
+
+        .nasa-search-modal-content {
+            background-color: #2b2b40;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 95%;
+            width: 1200px;
+            max-height: 95%;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .nasa-search-modal-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00bcd4;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        .nasa-search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .nasa-search-card {
+            background-color: #1a1a2e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer; /* Indicate that cards are clickable */
+        }
+
+        .nasa-search-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .nasa-search-card-content {
+            padding: 10px;
+            flex-grow: 1;
+        }
+
+        .nasa-search-card h4 {
+            font-size: 1.1em;
+            color: #00bcd4;
+            margin-top: 0;
+            margin-bottom: 5px;
+            min-height: 2.2em; /* Consistent title height */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .nasa-search-card p {
+            font-size: 0.8em;
+            color: #a0a0a0;
+            margin-bottom: 0;
+            margin-top: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            .sub-header {
+                flex-direction: column;
+                gap: 10px;
+                top: 75px;
+            }
+            .main-content {
+                margin-top: 170px;
+            }
+            .apod-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+            .search-bar {
+                flex-direction: column;
+                gap: 10px;
+                top: 160px;
+            }
+            .search-bar input[type="text"] {
+                width: calc(100% - 30px);
+            }
+            .nasa-search-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .sub-header {
+                padding: 8px 10px;
+                top: 60px;
+            }
+            .sub-header input[type="text"] {
+                width: 120px;
+                font-size: 0.9em;
+            }
+            .search-icon {
+                width: 20px;
+                height: 20px;
+            }
+            .main-content {
+                margin-top: 140px;
+                padding: 10px;
+            }
+            .apod-card img {
+                height: 200px;
+            }
+            .apod-card h3 {
+                font-size: 1.1em;
+            }
+            .modal-title {
+                font-size: 1.5em;
+            }
+            .modal-explanation {
+                font-size: 0.95em;
+            }
+            .close-button {
+                font-size: 1.5em;
+                top: 10px;
+                right: 10px;
+            }
+            .search-bar {
+                top: 120px;
+                padding: 10px;
+            }
+            .search-bar input[type="text"] {
+                font-size: 1em;
+            }
+            .search-bar button {
+                padding: 8px 15px;
+                font-size: 1em;
+            }
+            .nasa-search-modal-content h2 {
+                font-size: 1.5em;
+            }
+            .nasa-search-card img {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>App World Space</h1>
+    </header>
+
+    <!-- Sub-Header / Control Bar -->
+    <div class="sub-header">
+        <div class="date-input-container">
+            <!-- Updated: Changed from date input to text input with placeholder -->
+            <input type="text" id="apod-date-input" placeholder="YYYY-MM-DD" title="Enter a date for APOD (YYYY-MM-DD)">
+        </div>
+        <!-- Updated: Replaced emoji with modern SVG search icon -->
+        <span class="search-icon" id="toggle-search-bar">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="#00bcd4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </span>
+    </div>
+
+    <!-- Keyword Search Bar -->
+    <div class="search-bar" id="keyword-search-bar">
+        <input type="text" id="nasa-search-input" placeholder="Search NASA images (e.g., galaxy, mars rover)">
+        <button id="execute-nasa-search">Search Images</button>
+    </div>
+
+    <!-- Main Content for APOD -->
+    <main class="main-content">
+        <div class="apod-grid" id="apod-container">
+            <!-- APOD cards will be loaded here -->
+        </div>
+        <div class="loading-indicator" id="loading-indicator">Loading more cosmic wonders...</div>
+    </main>
+
+    <!-- Full-screen APOD Modal -->
+    <div class="modal" id="apod-modal">
+        <div class="modal-content">
+            <button class="close-button" id="close-apod-modal">&times;</button>
+            <img src="" alt="Astronomy Picture of the Day" class="modal-image" id="modal-image">
+            <h2 class="modal-title" id="modal-title"></h2>
+            <p class="modal-date" id="modal-date"></p>
+            <p class="modal-explanation" id="modal-explanation"></p>
+        </div>
+    </div>
+
+    <!-- NASA Image Search Results Modal -->
+    <div class="nasa-search-modal" id="nasa-search-modal">
+        <div class="nasa-search-modal-content">
+            <button class="close-button" id="close-nasa-search-modal">&times;</button>
+            <h2>NASA Image Search Results</h2>
+            <div class="nasa-search-grid" id="nasa-search-results">
+                <!-- Search results will be loaded here -->
+            </div>
+            <div class="loading-indicator" id="nasa-loading-indicator">Searching for images...</div>
+        </div>
+    </div>
+
+    <!-- Modal for displaying NASA search image details -->
+    <div class="modal" id="nasa-image-modal">
+        <div class="modal-content">
+            <button class="close-button" id="close-nasa-image-modal">&times;</button>
+            <img src="" alt="NASA Image" class="modal-image" id="nasa-modal-image">
+            <h2 class="modal-title" id="nasa-modal-title"></h2>
+            <p class="modal-date" id="nasa-modal-date"></p>
+            <p class="modal-explanation" id="nasa-modal-explanation"></p>
+        </div>
+    </div>
+
+    <script>
+        const NASA_API_KEY = 'CVod7L4EOJKlFrPRT0Pm7IZm5JCRrsrvQyk0pO0f';
+        const APOD_BASE_URL = 'https://api.nasa.gov/planetary/apod';
+        const NASA_IMAGE_SEARCH_BASE_URL = 'https://images-api.nasa.gov/search';
+
+        const apodContainer = document.getElementById('apod-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const apodDateInput = document.getElementById('apod-date-input');
+        const toggleSearchBarBtn = document.getElementById('toggle-search-bar');
+        const keywordSearchBar = document.getElementById('keyword-search-bar');
+        const nasaSearchInput = document.getElementById('nasa-search-input');
+        const executeNasaSearchBtn = document.getElementById('execute-nasa-search');
+
+        // APOD Modal elements
+        const apodModal = document.getElementById('apod-modal');
+        const closeApodModalBtn = document.getElementById('close-apod-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDate = document.getElementById('modal-date');
+        const modalExplanation = document.getElementById('modal-explanation');
+
+        // NASA Search Modal elements
+        const nasaSearchModal = document.getElementById('nasa-search-modal');
+        const closeNasaSearchModalBtn = document.getElementById('close-nasa-search-modal');
+        const nasaSearchResults = document.getElementById('nasa-search-results');
+        const nasaLoadingIndicator = document.getElementById('nasa-loading-indicator');
+
+        // NASA Image Detail Modal elements
+        const nasaImageModal = document.getElementById('nasa-image-modal');
+        const closeNasaImageModalBtn = document.getElementById('close-nasa-image-modal');
+        const nasaModalImage = document.getElementById('nasa-modal-image');
+        const nasaModalTitle = document.getElementById('nasa-modal-title');
+        const nasaModalDate = document.getElementById('nasa-modal-date');
+        const nasaModalExplanation = document.getElementById('nasa-modal-explanation');
+
+        let isLoadingApod = false;
+        let currentPageDate = new Date(); // Start from today's date
+        let apodCache = {}; // Cache APOD data to avoid re-fetching
+        let nasaSearchResultsCache = []; // Store NASA search results for modal display
+
+        // Helper to format date as YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Function to create an APOD card
+        function createApodCard(apodData) {
+            // Check if the media type is an image
+            if (apodData.media_type !== 'image') {
+                return null; // Skip non-image APODs for the main gallery
+            }
+
+            const card = document.createElement('div');
+            card.classList.add('apod-card');
+            card.setAttribute('data-date', apodData.date); // For direct scrolling
+
+            const img = document.createElement('img');
+            img.src = apodData.url;
+            img.alt = apodData.title;
+
+            const content = document.createElement('div');
+            content.classList.add('apod-card-content');
+
+            const title = document.createElement('h3');
+            title.textContent = apodData.title;
+
+            const date = document.createElement('p');
+            date.textContent = apodData.date;
+
+            content.appendChild(title);
+            content.appendChild(date);
+            card.appendChild(img);
+            card.appendChild(content);
+
+            card.addEventListener('click', () => openApodModal(apodData));
+
+            return card;
+        }
+
+        // Function to fetch APOD data
+        async function fetchApod(dateString) {
+            if (apodCache[dateString]) {
+                return apodCache[dateString];
+            }
+            try {
+                const response = await fetch(`${APOD_BASE_URL}?api_key=${NASA_API_KEY}&date=${dateString}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                apodCache[dateString] = data; // Cache the data
+                return data;
+            } catch (error) {
+                console.error(`Error fetching APOD for ${dateString}:`, error);
+                return null;
+            }
+        }
+
+        // Function to load APODs for infinite scrolling
+        async function loadMoreApods() {
+            if (isLoadingApod) return;
+            isLoadingApod = true;
+            loadingIndicator.style.display = 'block';
+
+            const promises = [];
+            for (let i = 0; i < 5; i++) { // Load 5 APODs at a time
+                const dateToFetch = formatDate(currentPageDate);
+                promises.push(fetchApod(dateToFetch));
+                currentPageDate.setDate(currentPageDate.getDate() - 1); // Go back one day
+            }
+
+            const results = await Promise.all(promises);
+
+            results.forEach(apodData => {
+                if (apodData) {
+                    const card = createApodCard(apodData);
+                    if (card) {
+                        apodContainer.appendChild(card);
+                    }
+                }
+            });
+
+            loadingIndicator.style.display = 'none';
+            isLoadingApod = false;
+        }
+
+        // Infinite scrolling logic
+        window.addEventListener('scroll', () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoadingApod) {
+                loadMoreApods();
+            }
+        });
+
+        // Open APOD full-screen modal
+        function openApodModal(apodData) {
+            modalImage.src = apodData.url;
+            modalImage.alt = apodData.title;
+            modalTitle.textContent = apodData.title;
+            modalDate.textContent = apodData.date;
+            modalExplanation.textContent = apodData.explanation;
+            apodModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        // Close APOD modal
+        closeApodModalBtn.addEventListener('click', () => {
+            apodModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        // Close modal when clicking outside content
+        apodModal.addEventListener('click', (e) => {
+            if (e.target === apodModal) {
+                apodModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Updated: Search by Date functionality with text input
+        apodDateInput.addEventListener('keypress', async (e) => {
+            // Check if Enter key was pressed
+            if (e.key === 'Enter') {
+                const selectedDate = apodDateInput.value.trim();
+                
+                // Validate date format (YYYY-MM-DD)
+                const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+                if (!datePattern.test(selectedDate)) {
+                    alert('Please enter a valid date in YYYY-MM-DD format.');
+                    return;
+                }
+                
+                // Scroll to the existing card if it's already loaded
+                const existingCard = document.querySelector(`.apod-card[data-date="${selectedDate}"]`);
+                if (existingCard) {
+                    existingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Briefly highlight or open modal for the found card
+                    existingCard.style.outline = '3px solid #00bcd4';
+                    setTimeout(() => existingCard.style.outline = '', 3000);
+                    return;
+                }
+
+                // If not found, fetch and display it
+                loadingIndicator.style.display = 'block';
+                const apodData = await fetchApod(selectedDate);
+                loadingIndicator.style.display = 'none';
+
+                if (apodData) {
+                    // If it's a date far in the past/future, just open the modal directly
+                    openApodModal(apodData);
+                } else {
+                    alert('No APOD found for this date or an error occurred.');
+                }
+                apodDateInput.value = ''; // Clear input after search
+            }
+        });
+
+        // Toggle Keyword Search Bar
+        toggleSearchBarBtn.addEventListener('click', () => {
+            keywordSearchBar.style.display = keywordSearchBar.style.display === 'flex' ? 'none' : 'flex';
+            if (keywordSearchBar.style.display === 'flex') {
+                nasaSearchInput.focus();
+            }
+        });
+
+        // Function to fetch NASA Image and Video Library data
+        async function searchNasaImages(query) {
+            if (!query) return [];
+            nasaLoadingIndicator.style.display = 'block';
+            nasaSearchResults.innerHTML = ''; // Clear previous results
+
+            try {
+                const response = await fetch(`${NASA_IMAGE_SEARCH_BASE_URL}?q=${encodeURIComponent(query)}&media_type=image`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                nasaLoadingIndicator.style.display = 'none';
+                return data.collection.items;
+            } catch (error) {
+                console.error('Error fetching NASA images:', error);
+                nasaLoadingIndicator.style.display = 'none';
+                return [];
+            }
+        }
+
+        // Function to open NASA image modal with details
+        function openNasaImageModal(item) {
+            const imageUrl = item.links && item.links.length > 0 ? item.links[0].href : '';
+            const title = item.data && item.data.length > 0 ? item.data[0].title : 'Untitled';
+            const description = item.data && item.data.length > 0 ? item.data[0].description : 'No description available.';
+            const dateCreated = item.data && item.data.length > 0 ? item.data[0].date_created.substring(0, 10) : 'Unknown date';
+
+            nasaModalImage.src = imageUrl;
+            nasaModalImage.alt = title;
+            nasaModalTitle.textContent = title;
+            nasaModalDate.textContent = dateCreated;
+            nasaModalExplanation.textContent = description;
+            
+            nasaImageModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Display NASA search results
+        function displayNasaSearchResults(items) {
+            nasaSearchResultsCache = items; // Store for modal access
+            nasaSearchResults.innerHTML = ''; // Clear previous results
+            if (items.length === 0) {
+                nasaSearchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0;">No images found for your query. Try a different keyword.</p>';
+                return;
+            }
+
+            items.forEach((item, index) => {
+                const imageUrl = item.links && item.links.length > 0 ? item.links[0].href : 'https://via.placeholder.com/250x200?text=No+Image';
+                const title = item.data && item.data.length > 0 ? item.data[0].title : 'Untitled';
+                const description = item.data && item.data.length > 0 ? item.data[0].description : '';
+                const dateCreated = item.data && item.data.length > 0 ? item.data[0].date_created.substring(0, 10) : '';
+
+                const card = document.createElement('div');
+                card.classList.add('nasa-search-card');
+                card.dataset.index = index; // Store index for modal reference
+
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = title;
+
+                const content = document.createElement('div');
+                content.classList.add('nasa-search-card-content');
+
+                const h4 = document.createElement('h4');
+                h4.textContent = title;
+
+                const pDate = document.createElement('p');
+                pDate.textContent = `Date: ${dateCreated}`;
+
+                content.appendChild(h4);
+                content.appendChild(pDate);
+                card.appendChild(img);
+                card.appendChild(content);
+
+                // Add click event to show modal with details
+                card.addEventListener('click', () => {
+                    openNasaImageModal(item);
+                });
+
+                nasaSearchResults.appendChild(card);
+            });
+        }
+
+        // Execute NASA Keyword Search
+        executeNasaSearchBtn.addEventListener('click', async () => {
+            const query = nasaSearchInput.value.trim();
+            if (query) {
+                nasaSearchModal.style.display = 'flex';
+                const results = await searchNasaImages(query);
+                displayNasaSearchResults(results);
+            } else {
+                alert('Please enter a search term for NASA images.');
+            }
+        });
+
+        // Allow pressing Enter in search input to trigger search
+        nasaSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                executeNasaSearchBtn.click();
+            }
+        });
+
+        // Close NASA Search Modal
+        closeNasaSearchModalBtn.addEventListener('click', () => {
+            nasaSearchModal.style.display = 'none';
+            nasaSearchResults.innerHTML = ''; // Clear results when closing
+            nasaSearchInput.value = ''; // Clear input
+        });
+
+        // Close NASA Image Modal
+        closeNasaImageModalBtn.addEventListener('click', () => {
+            nasaImageModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        // Close NASA Image Modal when clicking outside
+        nasaImageModal.addEventListener('click', (e) => {
+            if (e.target === nasaImageModal) {
+                nasaImageModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Initialize by loading initial APODs
+        loadMoreApods();
+    </script>
+
+</body>
+</html>
